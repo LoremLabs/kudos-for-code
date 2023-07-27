@@ -19,9 +19,10 @@ type Dependency struct {
 }
 
 type Contributor struct {
-	email      string
-	numCommits int
-	score      float32
+	email        string
+	isValidEmail bool
+	numCommits   int
+	score        float32
 }
 
 func min(x, y int) int {
@@ -121,21 +122,28 @@ func (p *Project) EnrichContributors() {
 		}
 	}
 
-	lookup := GenerateEmails(vcsURLs)
+	vcsUrlEmailsLookup := GenerateEmails(vcsURLs)
 	for _, d := range p.dependencies {
 		counter := map[string]int{}
 		total := 0
-		for _, email := range lookup[d.vcsUrl] {
-			counter[email] += 1
-			total += 1
+		emails := vcsUrlEmailsLookup[d.vcsUrl]
+		emailValidationResults := ValidateEmails(emails)
+
+		for _, result := range emailValidationResults {
+			if result.IsValid {
+				counter[result.Email] += 1
+				total += 1
+			}
+
+			d.contributors[result.Email] = &Contributor{
+				email:        result.Email,
+				isValidEmail: result.IsValid,
+			}
 		}
 
 		for email, numCommits := range counter {
-			d.contributors[email] = &Contributor{
-				email:      email,
-				numCommits: numCommits,
-				score:      float32(numCommits) / float32(total) * d.weight,
-			}
+			d.contributors[email].numCommits = numCommits
+			d.contributors[email].score = float32(numCommits) / float32(total) * d.weight
 		}
 	}
 }
