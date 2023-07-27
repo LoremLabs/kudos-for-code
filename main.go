@@ -17,6 +17,7 @@ func main() {
 	analyzerResult := NewAnalyzerResult(analyzerResultFilePath)
 	p := NewProject(projectName, analyzerResult)
 	p.EnrichContributors()
+	p.ScoreContributors(true)
 
 	for _, k := range GenerateKudos(p) {
 		fmt.Println(string(k.ToJSON()))

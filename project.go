@@ -124,26 +124,66 @@ func (p *Project) EnrichContributors() {
 
 	vcsUrlEmailsLookup := GenerateEmails(vcsURLs)
 	for _, d := range p.dependencies {
-		counter := map[string]int{}
-		total := 0
-		emails := vcsUrlEmailsLookup[d.vcsUrl]
-		emailValidationResults := ValidateEmails(emails)
+		numCommitsPerEmail := map[string]int{}
+		for _, email := range vcsUrlEmailsLookup[d.vcsUrl] {
+			numCommitsPerEmail[email] += 1
+		}
 
-		for _, result := range emailValidationResults {
-			if result.IsValid {
-				counter[result.Email] += 1
-				total += 1
-			}
-
-			d.contributors[result.Email] = &Contributor{
-				email:        result.Email,
-				isValidEmail: result.IsValid,
+		for email, numCommits := range numCommitsPerEmail {
+			d.contributors[email] = &Contributor{
+				email:        email,
+				isValidEmail: false,
+				numCommits:   numCommits,
+				score:        0,
 			}
 		}
 
-		for email, numCommits := range counter {
-			d.contributors[email].numCommits = numCommits
-			d.contributors[email].score = float32(numCommits) / float32(total) * d.weight
+	}
+}
+
+func (p *Project) ScoreContributors(onlyValidEmails bool) {
+	if onlyValidEmails {
+		emailLookup := map[string]bool{}
+		for _, d := range p.dependencies {
+			for _, c := range d.contributors {
+				emailLookup[c.email] = true
+			}
+		}
+
+		uniqueEmails := []string{}
+		for email := range emailLookup {
+			uniqueEmails = append(uniqueEmails, email)
+		}
+
+		emailValidationResults := ValidateEmails(uniqueEmails)
+		validEmailLookup := map[string]bool{}
+		for _, r := range emailValidationResults {
+			validEmailLookup[r.Email] = r.IsValid
+		}
+
+		for _, d := range p.dependencies {
+			for _, c := range d.contributors {
+				c.isValidEmail = validEmailLookup[c.email]
+			}
+		}
+	}
+
+	for _, d := range p.dependencies {
+		totalCommits := 0
+		for _, c := range d.contributors {
+			if onlyValidEmails && !c.isValidEmail {
+				continue
+			}
+
+			totalCommits += c.numCommits
+		}
+
+		for _, c := range d.contributors {
+			if onlyValidEmails && !c.isValidEmail {
+				continue
+			}
+
+			c.score = float32(c.numCommits) / float32(totalCommits) * d.weight
 		}
 	}
 }
