@@ -2,6 +2,9 @@ package main
 
 import (
 	"fmt"
+	"log"
+	"net/mail"
+	"strings"
 )
 
 type Project struct {
@@ -144,21 +147,39 @@ func (p *Project) EnrichContributors() {
 func (p *Project) ScoreContributors(onlyValidEmails bool) {
 	if onlyValidEmails {
 		emailLookup := map[string]bool{}
+		domainLookup := map[string]bool{}
 		for _, d := range p.dependencies {
 			for _, c := range d.contributors {
-				emailLookup[c.email] = true
+				_, err := mail.ParseAddress(c.email)
+				if err == nil {
+					emailLookup[c.email] = true
+				} else {
+					log.Printf("SKIP(%s): %s\n", c.email, err)
+					continue
+				}
+
+				components := strings.Split(c.email, "@")
+				domainLookup[components[1]] = false
 			}
 		}
 
-		uniqueEmails := []string{}
-		for email := range emailLookup {
-			uniqueEmails = append(uniqueEmails, email)
+		testEmails := []string{}
+		for domain := range domainLookup {
+			testEmails = append(testEmails, fmt.Sprintf("a@%s", domain))
 		}
 
-		emailValidationResults := ValidateEmails(uniqueEmails)
-		validEmailLookup := map[string]bool{}
+		emailValidationResults := ValidateEmails(testEmails)
 		for _, r := range emailValidationResults {
-			validEmailLookup[r.Email] = r.IsValid
+			components := strings.Split(r.Email, "@")
+			domainLookup[components[1]] = r.IsValid
+		}
+
+		validEmailLookup := map[string]bool{}
+		for email := range emailLookup {
+			components := strings.Split(email, "@")
+			if domainLookup[components[1]] {
+				validEmailLookup[email] = true
+			}
 		}
 
 		for _, d := range p.dependencies {
@@ -166,11 +187,27 @@ func (p *Project) ScoreContributors(onlyValidEmails bool) {
 				c.isValidEmail = validEmailLookup[c.email]
 			}
 		}
+
+		log.Printf("#valid unique emails: %d\n", len(validEmailLookup))
 	}
+
+	countEmails := 0
+	countValidEmails := 0
+	countCommits := 0
+	countValidCommits := 0
 
 	for _, d := range p.dependencies {
 		totalCommits := 0
 		for _, c := range d.contributors {
+			// for stat
+			countEmails += 1
+			countCommits += c.numCommits
+			if c.isValidEmail {
+				countValidEmails += 1
+				countValidCommits += c.numCommits
+			}
+
+			// for logic
 			if onlyValidEmails && !c.isValidEmail {
 				continue
 			}
@@ -186,6 +223,11 @@ func (p *Project) ScoreContributors(onlyValidEmails bool) {
 			c.score = float32(c.numCommits) / float32(totalCommits) * d.weight
 		}
 	}
+
+	log.Printf("countEmails: %d\n", countEmails)
+	log.Printf("countValidEmails: %d\n", countValidEmails)
+	log.Printf("countCommits: %d\n", countCommits)
+	log.Printf("countValidCommits: %d\n", countValidCommits)
 }
 
 func (p *Project) ShowDependencyStat() {
