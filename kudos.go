@@ -20,14 +20,16 @@ func GenerateKudos(p *Project) []Kudos {
 	traceId := NewRandomId()
 	for _, d := range p.dependencies {
 		for _, c := range d.contributors {
-			kudos = append(kudos, Kudos{
-				traceId,
-				NewRandomId(),
-				fmt.Sprintf("did:kudos:email:%s", c.email),
-				time.Now().UTC(),
-				c.score,
-				fmt.Sprintf("%s contribution", d.id),
-			})
+			if c.score > 0 {
+				kudos = append(kudos, Kudos{
+					traceId,
+					NewRandomId(),
+					fmt.Sprintf("did:kudos:email:%s", c.email),
+					time.Now().UTC(),
+					c.score,
+					fmt.Sprintf("%s contribution", d.id),
+				})
+			}
 		}
 	}
 
