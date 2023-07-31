@@ -17,7 +17,7 @@ To use Kudos for Code, follow these steps:
 1. Ensure you have Go installed.
 2. Run the following command in the terminal, providing the `projectName` and the path to the `analyzer-result.json` file as arguments:
 
-````sh
+```sh
 go run . [projectName] [ORTAnalyzerResultFilePath]
 ```
 
@@ -25,7 +25,7 @@ Example:
 
 ```sh
 go run . test ./test/analyzer-result.json
-````
+```
 
 ## Sample Output
 
@@ -42,12 +42,12 @@ Kudos for Code generates output in ndjson format, with each kudos entry having t
 }
 ```
 
-* traceId: A transaction ID for the entire ndjson.
-* id: A unique ID for each kudos entry.
-* identifier: A DID (Decentralized Identifier) representing each contributor identified by their email.
-* ts: The timestamp of when the kudos was generated.
-* weight: The contribution weight of the identifier to the package.
-* description: A formatted string indicating the contribution details, including package manager, package name, and version.
+- traceId: A transaction ID for the entire ndjson.
+- id: A unique ID for each kudos entry.
+- identifier: A DID (Decentralized Identifier) representing each contributor identified by their email.
+- ts: The timestamp of when the kudos was generated.
+- weight: The contribution weight of the identifier to the package.
+- description: A formatted string indicating the contribution details, including package manager, package name, and version.
 
 ## Input and Output
 
