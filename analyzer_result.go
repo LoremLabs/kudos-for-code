@@ -2,7 +2,7 @@ package main
 
 import (
 	"encoding/json"
-	"fmt"
+	"log"
 	"os"
 )
 
@@ -79,7 +79,7 @@ func NewAnalyzerResult(filePath string) *AnalyzerResult {
 	// Unmarshal the JSON data into the AnalyzerResult struct
 	err = json.Unmarshal(jsonData, &analyzerResult)
 	if err != nil {
-		fmt.Println("Error unmarshaling JSON data:", err)
+		log.Println("Error unmarshaling JSON data:", err)
 		panic(err)
 	}
 

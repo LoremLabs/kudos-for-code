@@ -1,6 +1,7 @@
 package main
 
 import (
+	"log"
 	"sync"
 
 	emailverifier "github.com/AfterShip/email-verifier"
@@ -45,11 +46,11 @@ func ValidateEmails(emails []string) []ValidationResult {
 func checkEmail(email string) bool {
 	ret, err := verifier.Verify(email)
 	if err != nil {
-		// fmt.Printf("%s: verify email address failed, error is: %+s\n", email, err)
+		log.Printf("%s: verify email address failed, error is: %+s\n", email, err)
 		return false
 	}
 	if !ret.Syntax.Valid {
-		// fmt.Printf("%s: email address syntax is invalid.\n", email)
+		log.Printf("%s: email address syntax is invalid.\n", email)
 		return false
 	}
 

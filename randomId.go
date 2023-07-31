@@ -2,7 +2,7 @@ package main
 
 import (
 	"encoding/base64"
-	"fmt"
+	"log"
 	"strings"
 
 	"github.com/google/uuid"
@@ -29,7 +29,7 @@ func NewRandomId() string {
 	// Generate a random UUID
 	uuidObj, err := uuid.NewRandom()
 	if err != nil {
-		fmt.Println("Error generating UUID:", err)
+		log.Println("Error generating UUID:", err)
 		panic(err)
 	}
 

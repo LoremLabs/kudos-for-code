@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"log"
 	"time"
 )
 
@@ -39,7 +40,7 @@ func GenerateKudos(p *Project) []Kudos {
 func (k *Kudos) ToJSON() []byte {
 	jsonData, err := json.Marshal(k)
 	if err != nil {
-		fmt.Println("Error marshaling to JSON:", err)
+		log.Println("Error marshaling to JSON:", err)
 		panic(err)
 	}
 
