@@ -117,7 +117,7 @@ func NewProject(projectName string, a *AnalyzerResult) *Project {
 	return p
 }
 
-func (p *Project) EnrichContributors() {
+func (p *Project) EnrichContributors(noMerges bool) {
 	vcsURLs := []string{}
 	for _, d := range p.dependencies {
 		if d.vcsType == "Git" {
@@ -125,7 +125,7 @@ func (p *Project) EnrichContributors() {
 		}
 	}
 
-	vcsUrlEmailsLookup := GenerateEmails(vcsURLs)
+	vcsUrlEmailsLookup := GenerateEmails(vcsURLs, noMerges)
 	for _, d := range p.dependencies {
 		numCommitsPerEmail := map[string]int{}
 		for _, email := range vcsUrlEmailsLookup[d.vcsUrl] {

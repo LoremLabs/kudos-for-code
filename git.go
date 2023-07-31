@@ -9,7 +9,7 @@ import (
 	"sync"
 )
 
-func GenerateEmails(repoUrls []string) map[string][]string {
+func GenerateEmails(repoUrls []string, noMerges bool) map[string][]string {
 	var lookup sync.Map
 
 	//   1: 8.34min
@@ -40,7 +40,7 @@ func GenerateEmails(repoUrls []string) map[string][]string {
 				// e.g., https://github.com/substack/node-concat-map.git
 				// log.Printf("Error cloning repository %s: %s\n", url, err)
 			} else {
-				emails = getAuthorEmails(destPath)
+				emails = getAuthorEmails(destPath, noMerges)
 			}
 
 			defer os.RemoveAll(destPath)
@@ -76,8 +76,13 @@ func cloneRepository(repoURL, destPath string) error {
 	return nil
 }
 
-func getAuthorEmails(destPath string) []string {
-	cmd := exec.Command("git", "log", "--format='%ae'")
+func getAuthorEmails(destPath string, noMerges bool) []string {
+	args := []string{"log", "--format='%ae'"}
+	if noMerges {
+		args = append(args, "--no-merges")
+	}
+	// --no-merges
+	cmd := exec.Command("git", args...)
 	cmd.Dir = destPath
 	out, _ := cmd.Output()
 

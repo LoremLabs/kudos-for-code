@@ -10,14 +10,15 @@ func main() {
 		fmt.Println("Please provide a project name and a analyzerResultFilePath as an argument.")
 		return
 	}
-
+	noMerges := true
+	onlyValidEmails := true
 	projectName := os.Args[2]
 	analyzerResultFilePath := os.Args[2]
 
 	analyzerResult := NewAnalyzerResult(analyzerResultFilePath)
 	p := NewProject(projectName, analyzerResult)
-	p.EnrichContributors()
-	p.ScoreContributors(true)
+	p.EnrichContributors(noMerges)
+	p.ScoreContributors(onlyValidEmails)
 
 	for _, k := range GenerateKudos(p) {
 		fmt.Println(string(k.ToJSON()))
