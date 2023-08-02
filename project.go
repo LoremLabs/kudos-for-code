@@ -8,8 +8,15 @@ import (
 )
 
 type Project struct {
-	name         string
-	dependencies []*Dependency
+	name                    string
+	dependencies            []*Dependency
+	limitDepth              int
+	maxDepth                int
+	numValidUniqueEmails    int
+	numValidEmails          int
+	numEmails               int
+	numCommits              int
+	numCommitsByValidEmails int
 }
 
 type Dependency struct {
@@ -28,20 +35,20 @@ type Contributor struct {
 	score        float32
 }
 
-func min(x, y int) int {
-	if x < y {
-		return x
-	}
-	return y
-}
-
-func NewProject(projectName string, a *AnalyzerResult) *Project {
-	maxDepth := 10
+func NewProject(projectName string, a *AnalyzerResult, limitDepth int) *Project {
 	weightFactors := []float32{1, 0.5, 0.25, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}
 
-	p := new(Project)
-	p.name = projectName
-	p.dependencies = []*Dependency{}
+	p := &Project{
+		name:                    projectName,
+		dependencies:            []*Dependency{},
+		limitDepth:              limitDepth,
+		maxDepth:                1,
+		numValidUniqueEmails:    0,
+		numValidEmails:          0,
+		numEmails:               0,
+		numCommits:              0,
+		numCommitsByValidEmails: 0,
+	}
 
 	packageDepthLookup := map[string]int{}
 	for _, dg := range a.Analyzer.Result.DependencyGraphs {
@@ -58,7 +65,8 @@ func NewProject(projectName string, a *AnalyzerResult) *Project {
 		}
 
 		currentNodes := roots
-		for currentDepth := 1; currentDepth <= maxDepth; currentDepth++ {
+		for currentDepth := 1; currentDepth <= p.limitDepth; currentDepth++ {
+			p.maxDepth = Max(currentDepth, p.maxDepth)
 			nextNodes := map[string]bool{}
 			for currentNode := range currentNodes {
 				for _, edge := range dg.Edges {
@@ -67,13 +75,13 @@ func NewProject(projectName string, a *AnalyzerResult) *Project {
 					if currentNode == from {
 						nextNodes[to] = true
 						if depth, ok := packageDepthLookup[from]; ok {
-							packageDepthLookup[from] = min(depth, currentDepth)
+							packageDepthLookup[from] = Min(depth, currentDepth)
 						} else {
 							packageDepthLookup[from] = currentDepth
 						}
 
 						if depth, ok := packageDepthLookup[to]; ok {
-							packageDepthLookup[to] = min(depth, currentDepth)
+							packageDepthLookup[to] = Min(depth, currentDepth)
 						} else {
 							packageDepthLookup[to] = currentDepth
 						}
@@ -103,7 +111,7 @@ func NewProject(projectName string, a *AnalyzerResult) *Project {
 			id:           pkg.ID,
 			vcsType:      pkg.VCSProcessed.Type,
 			vcsUrl:       pkg.VCSProcessed.URL,
-			depth:        maxDepth,
+			depth:        limitDepth,
 			weight:       0,
 			contributors: map[string]*Contributor{},
 		}
@@ -188,23 +196,17 @@ func (p *Project) ScoreContributors(onlyValidEmails bool) {
 			}
 		}
 
-		log.Printf("#valid unique emails: %d\n", len(validEmailLookup))
+		p.numValidUniqueEmails = len(validEmailLookup)
 	}
-
-	countEmails := 0
-	countValidEmails := 0
-	countCommits := 0
-	countValidCommits := 0
 
 	for _, d := range p.dependencies {
 		totalCommits := 0
 		for _, c := range d.contributors {
-			// for stat
-			countEmails += 1
-			countCommits += c.numCommits
+			p.numEmails += 1
+			p.numCommits += c.numCommits
 			if c.isValidEmail {
-				countValidEmails += 1
-				countValidCommits += c.numCommits
+				p.numValidEmails += 1
+				p.numCommitsByValidEmails += c.numCommits
 			}
 
 			// for logic
@@ -223,11 +225,19 @@ func (p *Project) ScoreContributors(onlyValidEmails bool) {
 			c.score = float32(c.numCommits) / float32(totalCommits) * d.weight
 		}
 	}
+}
 
-	log.Printf("countEmails: %d\n", countEmails)
-	log.Printf("countValidEmails: %d\n", countValidEmails)
-	log.Printf("countCommits: %d\n", countCommits)
-	log.Printf("countValidCommits: %d\n", countValidCommits)
+func (p *Project) LogProjectStat() {
+	log.Printf("== BEGIN:Project Stat ==================\n")
+	log.Printf("num dependencies: %d\n", len(p.dependencies))
+	log.Printf("limit depth: %d\n", p.limitDepth)
+	log.Printf("max depth: %d\n", p.maxDepth)
+	log.Printf("num valid unique emails: %d\n", p.numValidUniqueEmails)
+	log.Printf("num valid emails: %d\n", p.numValidEmails)
+	log.Printf("num emails: %d\n", p.numEmails)
+	log.Printf("num commits: %d\n", p.numCommits)
+	log.Printf("num commits by valid emails: %d\n", p.numCommitsByValidEmails)
+	log.Printf("== END:Project Stat   ==================\n")
 }
 
 func (p *Project) ShowDependencyStat() {
