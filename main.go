@@ -12,7 +12,7 @@ func main() {
 	}
 	noMerges := true
 	onlyValidEmails := true
-	limitDepth := 2
+	limitDepth := 2 // depth should be less than 6
 	projectName := os.Args[2]
 	analyzerResultFilePath := os.Args[2]
 

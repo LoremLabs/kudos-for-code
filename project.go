@@ -9,7 +9,8 @@ import (
 
 type Project struct {
 	name                    string
-	dependencies            []*Dependency
+	dependencies            []*Dependency // filtered by limitDepth
+	weightFactors           []float32
 	limitDepth              int
 	maxDepth                int
 	numValidUniqueEmails    int
@@ -17,6 +18,7 @@ type Project struct {
 	numEmails               int
 	numCommits              int
 	numCommitsByValidEmails int
+	numDependencies         int // num dependencies from original ORT analyzer result
 }
 
 type Dependency struct {
@@ -36,11 +38,10 @@ type Contributor struct {
 }
 
 func NewProject(projectName string, a *AnalyzerResult, limitDepth int) *Project {
-	weightFactors := []float32{1, 0.5, 0.25, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}
-
 	p := &Project{
 		name:                    projectName,
 		dependencies:            []*Dependency{},
+		weightFactors:           []float32{1, 0.5, 0.25, 0.1, 0},
 		limitDepth:              limitDepth,
 		maxDepth:                1,
 		numValidUniqueEmails:    0,
@@ -48,6 +49,7 @@ func NewProject(projectName string, a *AnalyzerResult, limitDepth int) *Project 
 		numEmails:               0,
 		numCommits:              0,
 		numCommitsByValidEmails: 0,
+		numDependencies:         len(a.Analyzer.Result.Packages),
 	}
 
 	packageDepthLookup := map[string]int{}
@@ -79,12 +81,6 @@ func NewProject(projectName string, a *AnalyzerResult, limitDepth int) *Project 
 						} else {
 							packageDepthLookup[from] = currentDepth
 						}
-
-						if depth, ok := packageDepthLookup[to]; ok {
-							packageDepthLookup[to] = Min(depth, currentDepth)
-						} else {
-							packageDepthLookup[to] = currentDepth
-						}
 					}
 				}
 			}
@@ -111,13 +107,11 @@ func NewProject(projectName string, a *AnalyzerResult, limitDepth int) *Project 
 			id:           pkg.ID,
 			vcsType:      pkg.VCSProcessed.Type,
 			vcsUrl:       pkg.VCSProcessed.URL,
-			depth:        limitDepth,
-			weight:       0,
+			depth:        depth,
+			weight:       p.weightFactors[packageDepthLookup[pkg.ID]-1],
 			contributors: map[string]*Contributor{},
 		}
 
-		d.depth = depth
-		d.weight = weightFactors[packageDepthLookup[pkg.ID]-1]
 		p.dependencies = append(p.dependencies, d)
 
 	}
@@ -229,7 +223,8 @@ func (p *Project) ScoreContributors(onlyValidEmails bool) {
 
 func (p *Project) LogProjectStat() {
 	log.Printf("== BEGIN:Project Stat ==================\n")
-	log.Printf("num dependencies: %d\n", len(p.dependencies))
+	log.Printf("num dependencies: %d\n", p.numDependencies)
+	log.Printf("num dependencies filtered by limit depth: %d\n", len(p.dependencies))
 	log.Printf("limit depth: %d\n", p.limitDepth)
 	log.Printf("max depth: %d\n", p.maxDepth)
 	log.Printf("num valid unique emails: %d\n", p.numValidUniqueEmails)
