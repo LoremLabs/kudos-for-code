@@ -18,13 +18,41 @@ To use Kudos for Code, follow these steps:
 2. Run the following command in the terminal, providing the `projectName` and the path to the `analyzer-result.json` file as arguments:
 
 ```sh
-go run . [projectName] [ORTAnalyzerResultFilePath]
+go run . generate -i [ORTAnalyzerResultFilePath]
 ```
 
 Example:
 
 ```sh
-go run . test ./test/analyzer-result.json
+go run . generate -i ./test/analyzer-result.json
+```
+
+For advanced use:
+
+```sh
+go run . generate \
+  --inputfilepath ./test/analyzer-result.json \
+  --nomerges true \
+  --validemails false \
+  --limitdepth 3 \
+  --projectname test
+```
+
+or
+
+```sh
+go run . generate \
+  -i ./test/analyzer-result.json \
+  -m true \
+  -v false \
+  -d 3 \
+  -n test
+```
+
+For help:
+
+```sh
+go run . help
 ```
 
 ## Sample Output
@@ -37,7 +65,7 @@ Kudos for Code generates output in ndjson format, with each kudos entry having t
   "id": "oPSbCm4SQNG4Z12z4-bjtg",
   "identifier": "did:kudos:email:demo@demoemail.com",
   "ts": "2023-07-31T04:16:36.88501Z",
-  "weight": 0.008928572,
+  "weight": "0.008929",
   "description": "NPM::p-timeout:6.1.2 contribution"
 }
 ```
