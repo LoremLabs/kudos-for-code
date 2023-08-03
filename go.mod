@@ -1,4 +1,4 @@
-module kudos-from-code
+module github.com/LoremLabs/kudos-for-code-action
 
 go 1.20
 
