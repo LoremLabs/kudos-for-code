@@ -10,7 +10,7 @@ import (
 type Project struct {
 	name                    string
 	dependencies            []*Dependency // filtered by limitDepth
-	weightFactors           []float32
+	weightFactors           []float64
 	limitDepth              int
 	maxDepth                int
 	numValidUniqueEmails    int
@@ -26,7 +26,7 @@ type Dependency struct {
 	vcsType      string
 	vcsUrl       string
 	depth        int
-	weight       float32
+	weight       float64
 	contributors map[string]*Contributor
 }
 
@@ -34,14 +34,14 @@ type Contributor struct {
 	email        string
 	isValidEmail bool
 	numCommits   int
-	score        float32
+	score        float64
 }
 
 func NewProject(projectName string, a *AnalyzerResult, limitDepth int) *Project {
 	p := &Project{
 		name:                    projectName,
 		dependencies:            []*Dependency{},
-		weightFactors:           []float32{1, 0.5, 0.25, 0.1, 0},
+		weightFactors:           []float64{1, 0.5, 0.25, 0.1, 0},
 		limitDepth:              limitDepth,
 		maxDepth:                1,
 		numValidUniqueEmails:    0,
@@ -216,7 +216,7 @@ func (p *Project) ScoreContributors(onlyValidEmails bool) {
 				continue
 			}
 
-			c.score = float32(c.numCommits) / float32(totalCommits) * d.weight
+			c.score = float64(c.numCommits) / float64(totalCommits) * d.weight
 		}
 	}
 }
@@ -242,7 +242,7 @@ func (p *Project) ShowDependencyStat() {
 		fmt.Printf("depth: %d\n", d.depth)
 		fmt.Printf("weight: %f\n", d.weight)
 
-		sum := float32(0)
+		sum := float64(0)
 		for _, v := range d.contributors {
 			sum += v.score
 		}

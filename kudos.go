@@ -8,12 +8,12 @@ import (
 )
 
 type Kudos struct {
-	TraceId     string    `json:"traceId"`     // Per project
-	Id          string    `json:"id"`          // unique kudos id
-	Identifier  string    `json:"identifier"`  // e.g., email
-	Ts          time.Time `json:"ts"`          // generation time
-	Weight      float32   `json:"weight"`      // contribution to the entire project
-	Description string    `json:"description"` // contributing dependency
+	TraceId     string    `json:"traceId"`       // Per project
+	Id          string    `json:"id"`            // unique kudos id
+	Identifier  string    `json:"identifier"`    // e.g., email
+	Ts          time.Time `json:"ts"`            // generation time
+	Weight      float64   `json:"weight,string"` // contribution to the entire project
+	Description string    `json:"description"`   // contributing dependency
 }
 
 func GenerateKudos(p *Project) []Kudos {
@@ -27,7 +27,7 @@ func GenerateKudos(p *Project) []Kudos {
 					NewRandomId(),
 					fmt.Sprintf("did:kudos:email:%s", c.email),
 					time.Now().UTC(),
-					c.score,
+					ToFixed(c.score, 6),
 					fmt.Sprintf("%s contribution", d.id),
 				})
 			}
