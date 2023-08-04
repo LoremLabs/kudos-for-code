@@ -12,6 +12,8 @@ Kudos for Code is a tool that generates recognition (kudos) for contributors bas
 
 ## How to Run
 
+### Generate
+
 To use Kudos for Code, follow these steps:
 
 1. Ensure you have Go installed.
@@ -54,6 +56,22 @@ For help:
 ```sh
 go run . help
 ```
+
+### Ink
+
+To ink kudos with generated kudos from `generate` command, follow the following script:
+
+```sh
+% go run . generate \                                                                  (main)kudos-for-code
+  --inputfilepath ./test/analyzer-result.json \
+  --nomerges true \
+  --validemails false \
+  --limitdepth 2 \
+  --projectname test \
+| go run . ink -i [pool-id] -e https://api.semicolons.com
+```
+
+With `-v` option, it will validate result between kudos from `generate` and `ink`. It is just for test purpose.
 
 ## Sample Output
 

@@ -1,6 +1,8 @@
 package common
 
-import "math"
+import (
+	"math"
+)
 
 func Max(x, y int) int {
 	if x < y {
