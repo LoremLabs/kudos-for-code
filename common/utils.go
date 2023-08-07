@@ -2,6 +2,7 @@ package common
 
 import (
 	"math"
+	"regexp"
 )
 
 func Max(x, y int) int {
@@ -25,4 +26,15 @@ func round(num float64) int {
 func ToFixed(num float64, precision int) float64 {
 	output := math.Pow(10, float64(precision))
 	return float64(round(num*output)) / output
+}
+
+func ExtractPackageName(id string) string {
+	re := regexp.MustCompile(`\::(.*?)\:`)
+	match := re.FindStringSubmatch(id)
+
+	if len(match) > 0 {
+		return match[1]
+	}
+
+	return ""
 }

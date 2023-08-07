@@ -13,6 +13,7 @@ type Kudos struct {
 	Identifier  string    `json:"identifier"`    // e.g., email
 	Ts          time.Time `json:"ts"`            // generation time
 	Weight      float64   `json:"weight,string"` // contribution to the entire project
+	PackageName string    `json:"packageName"`   // package name
 	Description string    `json:"description"`   // contributing dependency
 	Type        string    `json:"type"`          // code
 }
@@ -21,6 +22,7 @@ func GenerateKudos(p *Project) []Kudos {
 	kudos := []Kudos{}
 	traceId := NewRandomId()
 	for _, d := range p.dependencies {
+		packageName := ExtractPackageName(d.id)
 		for _, c := range d.contributors {
 			if c.score > 0 {
 				kudos = append(kudos, Kudos{
@@ -29,7 +31,8 @@ func GenerateKudos(p *Project) []Kudos {
 					fmt.Sprintf("did:kudos:email:%s", c.email),
 					time.Now().UTC().Truncate(time.Second),
 					ToFixed(c.score, 6),
-					fmt.Sprintf("%s contribution", d.id),
+					packageName,
+					packageName,
 					"code",
 				})
 			}
