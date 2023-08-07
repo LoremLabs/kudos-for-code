@@ -32,6 +32,7 @@ type Dependency struct {
 
 type Contributor struct {
 	email        string
+	name         string
 	isValidEmail bool
 	numCommits   int
 	score        float64
@@ -127,16 +128,17 @@ func (p *Project) EnrichContributors(noMerges bool) {
 		}
 	}
 
-	vcsUrlEmailsLookup := GenerateEmails(vcsURLs, noMerges)
+	vcsURLCommitAuthorsLookup := GenerateCommitAuthors(vcsURLs, noMerges)
 	for _, d := range p.dependencies {
-		numCommitsPerEmail := map[string]int{}
-		for _, email := range vcsUrlEmailsLookup[d.vcsUrl] {
-			numCommitsPerEmail[email] += 1
+		numCommitsPerCommitAuthor := map[CommitAuthor]int{}
+		for _, commitAuthor := range vcsURLCommitAuthorsLookup[d.vcsUrl] {
+			numCommitsPerCommitAuthor[commitAuthor] += 1
 		}
 
-		for email, numCommits := range numCommitsPerEmail {
-			d.contributors[email] = &Contributor{
-				email:        email,
+		for commitAuthor, numCommits := range numCommitsPerCommitAuthor {
+			d.contributors[commitAuthor.email] = &Contributor{
+				email:        commitAuthor.email,
+				name:         commitAuthor.name,
 				isValidEmail: false,
 				numCommits:   numCommits,
 				score:        0,

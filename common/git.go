@@ -9,7 +9,12 @@ import (
 	"sync"
 )
 
-func GenerateEmails(repoUrls []string, noMerges bool) map[string][]string {
+type CommitAuthor struct {
+	name  string
+	email string
+}
+
+func GenerateCommitAuthors(repoUrls []string, noMerges bool) map[string][]CommitAuthor {
 	var lookup sync.Map
 
 	//   1: 8.34min
@@ -34,20 +39,20 @@ func GenerateEmails(repoUrls []string, noMerges bool) map[string][]string {
 				log.Fatal(err)
 			}
 
-			emails := []string{}
+			var commitAuthors []CommitAuthor
 			if err := cloneRepository(url, destPath); err != nil {
 				// Just skip if error
 				// e.g., https://github.com/substack/node-concat-map.git
 				// log.Printf("Error cloning repository %s: %s\n", url, err)
 			} else {
-				emails = getAuthorEmails(destPath, noMerges)
+				commitAuthors = getAuthorEmails(destPath, noMerges)
 			}
 
 			defer os.RemoveAll(destPath)
 
 			// An empty emails means error on git clone(most case)
 			// TODO: do better for error case
-			lookup.Store(url, emails)
+			lookup.Store(url, commitAuthors)
 		}(repoUrl)
 	}
 
@@ -56,9 +61,9 @@ func GenerateEmails(repoUrls []string, noMerges bool) map[string][]string {
 		semaphore <- struct{}{}
 	}
 
-	normalMap := make(map[string][]string)
+	normalMap := make(map[string][]CommitAuthor)
 	lookup.Range(func(key, value interface{}) bool {
-		normalMap[key.(string)] = value.([]string)
+		normalMap[key.(string)] = value.([]CommitAuthor)
 		return true
 	})
 
@@ -76,20 +81,36 @@ func cloneRepository(repoURL, destPath string) error {
 	return nil
 }
 
-func getAuthorEmails(destPath string, noMerges bool) []string {
-	args := []string{"log", "--format='%ae'"}
+func getAuthorEmails(destPath string, noMerges bool) []CommitAuthor {
+	delimiter := ":+://:+:"
+	args := []string{"log", fmt.Sprintf("--format='%%an%s%%ae'", delimiter)}
 	if noMerges {
 		args = append(args, "--no-merges")
 	}
-	// --no-merges
+
 	cmd := exec.Command("git", args...)
 	cmd.Dir = destPath
 	out, _ := cmd.Output()
 
-	cleanedEmails := []string{}
-	for _, e := range strings.Split(string(out), "\n") {
-		cleanedEmails = append(cleanedEmails, strings.ReplaceAll(e, "'", ""))
+	var commitAuthors []CommitAuthor
+	for _, row := range strings.Split(string(out), "\n") {
+		if row == "" {
+			continue
+		}
+
+		parts := strings.Split(row[1:len(row)-1], delimiter)
+		commitAuthor := CommitAuthor{
+			"",
+			"",
+		}
+
+		if len(parts) >= 2 {
+			commitAuthor.name = parts[0]
+			commitAuthor.email = parts[1]
+		}
+
+		commitAuthors = append(commitAuthors, commitAuthor)
 	}
 
-	return cleanedEmails
+	return commitAuthors
 }
