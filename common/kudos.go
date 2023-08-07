@@ -27,7 +27,7 @@ func GenerateKudos(p *Project) []Kudos {
 					traceId,
 					NewRandomId(),
 					fmt.Sprintf("did:kudos:email:%s", c.email),
-					time.Now().UTC(),
+					time.Now().UTC().Truncate(time.Second),
 					ToFixed(c.score, 6),
 					fmt.Sprintf("%s contribution", d.id),
 					"code",
