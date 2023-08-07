@@ -14,6 +14,7 @@ type Kudos struct {
 	Ts          time.Time `json:"ts"`            // generation time
 	Weight      float64   `json:"weight,string"` // contribution to the entire project
 	Description string    `json:"description"`   // contributing dependency
+	Type        string    `json:"type"`          // code
 }
 
 func GenerateKudos(p *Project) []Kudos {
@@ -29,6 +30,7 @@ func GenerateKudos(p *Project) []Kudos {
 					time.Now().UTC(),
 					ToFixed(c.score, 6),
 					fmt.Sprintf("%s contribution", d.id),
+					"code",
 				})
 			}
 		}
