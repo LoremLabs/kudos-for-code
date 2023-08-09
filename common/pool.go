@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"log"
 	"os/exec"
-	"strings"
 )
 
 type PoolData struct {
@@ -14,9 +13,9 @@ type PoolData struct {
 	PoolStatus string           `json:"poolStatus"`
 }
 
-func parsePoolData(data string) PoolData {
+func parsePoolData(data []byte) PoolData {
 	var poolData PoolData
-	err := json.Unmarshal([]byte(data), &poolData)
+	err := json.Unmarshal(data, &poolData)
 	if err != nil {
 		fmt.Println("Error:", err)
 	}
@@ -33,15 +32,5 @@ func PoolGet(poolId string) PoolData {
 		log.Panicln(output)
 	}
 
-	outputStr := string(output)
-	lines := strings.Split(outputStr, "\n")
-
-	// Skip the first line
-	if len(lines) > 0 {
-		lines = lines[1:]
-	}
-
-	modifiedOutput := strings.Join(lines, "\n")
-
-	return parsePoolData(modifiedOutput)
+	return parsePoolData(output)
 }
