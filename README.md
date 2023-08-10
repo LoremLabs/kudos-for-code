@@ -81,7 +81,7 @@ Kudos for Code generates output in ndjson format, with each kudos entry having t
 {
   "traceId": "bPNAr45YSfytbQyGz6FaGA",
   "id": "oPSbCm4SQNG4Z12z4-bjtg",
-  "identifier": "did:kudos:email:demo@demoemail.com",
+  "identifier": "email:demo@demoemail.com",
   "ts": "2023-07-31T04:16:36.88501Z",
   "weight": "0.008929",
   "description": "NPM::p-timeout:6.1.2 contribution"

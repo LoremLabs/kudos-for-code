@@ -20,6 +20,7 @@ type Kudos struct {
 }
 
 func GenerateKudos(p *Project) []Kudos {
+	subjectsPrefix := "email"
 	kudos := []Kudos{}
 	traceId := NewRandomId()
 	for _, d := range p.dependencies {
@@ -29,7 +30,7 @@ func GenerateKudos(p *Project) []Kudos {
 				kudos = append(kudos, Kudos{
 					traceId,
 					NewRandomId(),
-					fmt.Sprintf("did:kudos:email:%s", c.email),
+					fmt.Sprintf("%s:%s", subjectsPrefix, c.email),
 					c.name,
 					time.Now().UTC().Truncate(time.Second),
 					ToFixed(c.score, 6),
