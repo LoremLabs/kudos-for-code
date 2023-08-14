@@ -7,9 +7,7 @@ import (
 	emailverifier "github.com/AfterShip/email-verifier"
 )
 
-var (
-	verifier = emailverifier.NewVerifier()
-)
+var verifier = emailverifier.NewVerifier()
 
 type ValidationResult struct {
 	Email   string
@@ -17,18 +15,18 @@ type ValidationResult struct {
 }
 
 func ValidateEmails(emails []string) []ValidationResult {
-	emailChannel := make(chan string)
+	emailChannel := make(chan string, len(emails))
+	resultChannel := make(chan ValidationResult, len(emails))
 	var wg sync.WaitGroup
 	numWorkers := 20
 
-	results := []ValidationResult{}
 	for i := 0; i < numWorkers; i++ {
 		wg.Add(1)
 		go func() {
 			defer wg.Done()
 			for email := range emailChannel {
 				isValid := checkEmail(email)
-				results = append(results, ValidationResult{Email: email, IsValid: isValid})
+				resultChannel <- ValidationResult{Email: email, IsValid: isValid}
 			}
 		}()
 	}
@@ -39,6 +37,12 @@ func ValidateEmails(emails []string) []ValidationResult {
 
 	close(emailChannel)
 	wg.Wait()
+	close(resultChannel)
+
+	results := make([]ValidationResult, 0, len(emails))
+	for result := range resultChannel {
+		results = append(results, result)
+	}
 
 	return results
 }
@@ -46,11 +50,11 @@ func ValidateEmails(emails []string) []ValidationResult {
 func checkEmail(email string) bool {
 	ret, err := verifier.Verify(email)
 	if err != nil {
-		log.Printf("%s: verify email address failed, error is: %+s\n", email, err)
+		log.Printf("Failed to verify email address %s: %v", email, err)
 		return false
 	}
 	if !ret.Syntax.Valid {
-		log.Printf("%s: email address syntax is invalid.\n", email)
+		log.Printf("Invalid email address syntax: %s", email)
 		return false
 	}
 
