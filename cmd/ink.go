@@ -46,7 +46,15 @@ var inkCmd = &cobra.Command{
 
 		if validateResult {
 			log.Println("Validation started.")
-			poolData := common.PoolGet(poolId)
+
+			poolData, err := common.PoolGet(poolId)
+			if err != nil {
+				log.Printf("Validation skipped due to get pool error: %v\n", err)
+				fmt.Printf("But, kudos are inked successfully.\n")
+
+				return
+			}
+
 			var target []common.Kudos
 			for _, kudos := range poolData.Pool {
 				target = append(target, kudos)

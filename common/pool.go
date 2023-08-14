@@ -3,7 +3,6 @@ package common
 import (
 	"encoding/json"
 	"fmt"
-	"log"
 	"os/exec"
 )
 
@@ -23,14 +22,12 @@ func parsePoolData(data []byte) PoolData {
 	return poolData
 }
 
-// FIXME: pool throw error sometimes
-func PoolGet(poolId string) PoolData {
+func PoolGet(poolId string) (PoolData, error) {
 	cmd := exec.Command("npx", "@loremlabs/setler@latest", "pool", "get", "--poolId", poolId)
 	output, err := cmd.Output()
 	if err != nil {
-		// outputStr := string(output)
-		log.Panicln(output)
+		return PoolData{}, fmt.Errorf("error running command: %w: %s", err, output)
 	}
 
-	return parsePoolData(output)
+	return parsePoolData(output), nil
 }
