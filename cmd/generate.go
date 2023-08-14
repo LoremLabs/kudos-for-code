@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+	"log"
 
 	"github.com/LoremLabs/kudos-for-code-action/common"
 	"github.com/spf13/cobra"
@@ -17,8 +18,11 @@ var generateCmd = &cobra.Command{
 	Aliases: []string{"gen"},
 	Short:   "Generate Kudos from ORT result",
 	Run: func(cmd *cobra.Command, args []string) {
-		analyzerResult := common.NewAnalyzerResult(analyzerResultFilePath)
-		p := common.NewProject(projectName, analyzerResult, limitDepth)
+		result, err := common.NewAnalyzerResult(analyzerResultFilePath)
+		if err != nil {
+			log.Fatalf("Failed to create analyzer result: %v", err)
+		}
+		p := common.NewProject(projectName, result, limitDepth)
 		p.EnrichContributors(noMerges)
 		p.ScoreContributors(validEmails)
 		p.LogProjectStat()

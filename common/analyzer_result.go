@@ -2,7 +2,7 @@ package common
 
 import (
 	"encoding/json"
-	"log"
+	"fmt"
 	"os"
 )
 
@@ -67,21 +67,17 @@ type AnalyzerResult struct {
 	} `json:"analyzer"`
 }
 
-func NewAnalyzerResult(filePath string) *AnalyzerResult {
+func NewAnalyzerResult(filePath string) (*AnalyzerResult, error) {
 	jsonData, err := os.ReadFile(filePath)
 	if err != nil {
-		panic(err)
+		return nil, fmt.Errorf("error reading file: %w", err)
 	}
 
-	// Create an instance of AnalyzerResult to hold the parsed JSON data
 	var analyzerResult AnalyzerResult
-
-	// Unmarshal the JSON data into the AnalyzerResult struct
 	err = json.Unmarshal(jsonData, &analyzerResult)
 	if err != nil {
-		log.Println("Error unmarshaling JSON data:", err)
-		panic(err)
+		return nil, fmt.Errorf("error unmarshaling JSON data: %w", err)
 	}
 
-	return &analyzerResult
+	return &analyzerResult, nil
 }
