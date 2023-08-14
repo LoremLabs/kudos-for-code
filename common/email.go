@@ -2,12 +2,11 @@ package common
 
 import (
 	"log"
+	"net"
+	"net/mail"
+	"strings"
 	"sync"
-
-	emailverifier "github.com/AfterShip/email-verifier"
 )
-
-var verifier = emailverifier.NewVerifier()
 
 type ValidationResult struct {
 	Email   string
@@ -47,13 +46,18 @@ func ValidateEmails(emails []string, numWorkers int) []ValidationResult {
 }
 
 func checkEmail(email string) bool {
-	ret, err := verifier.Verify(email)
+	// Check syntax
+	_, err := mail.ParseAddress(email)
 	if err != nil {
-		log.Printf("Failed to verify email address %s: %v", email, err)
+		log.Printf("Invalid email address syntax: %s", email)
 		return false
 	}
-	if !ret.Syntax.Valid {
-		log.Printf("Invalid email address syntax: %s", email)
+
+	// Check MX record
+	domain := strings.Split(email, "@")[1]
+	mx, err := net.LookupMX(domain)
+	if err != nil || len(mx) == 0 {
+		log.Printf("Failed to verify email address %s: Mail server does not exist: %v", email, err)
 		return false
 	}
 

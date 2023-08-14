@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/LoremLabs/kudos-for-code-action/common"
+	"github.com/LoremLabs/kudos-for-code/common"
 	"github.com/spf13/cobra"
 )
 

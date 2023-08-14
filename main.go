@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/LoremLabs/kudos-for-code-action/cmd"
+	"github.com/LoremLabs/kudos-for-code/cmd"
 )
 
 func main() {
