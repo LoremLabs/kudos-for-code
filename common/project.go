@@ -152,6 +152,7 @@ func (p *Project) ScoreContributors(onlyValidEmails bool) {
 	if onlyValidEmails {
 		emailLookup := map[string]bool{}
 		domainLookup := map[string]bool{}
+		numWorkers := 20
 		for _, d := range p.dependencies {
 			for _, c := range d.contributors {
 				_, err := mail.ParseAddress(c.email)
@@ -172,7 +173,7 @@ func (p *Project) ScoreContributors(onlyValidEmails bool) {
 			testEmails = append(testEmails, fmt.Sprintf("a@%s", domain))
 		}
 
-		emailValidationResults := ValidateEmails(testEmails)
+		emailValidationResults := ValidateEmails(testEmails, numWorkers)
 		for _, r := range emailValidationResults {
 			components := strings.Split(r.Email, "@")
 			domainLookup[components[1]] = r.IsValid

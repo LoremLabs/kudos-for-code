@@ -14,11 +14,10 @@ type ValidationResult struct {
 	IsValid bool
 }
 
-func ValidateEmails(emails []string) []ValidationResult {
+func ValidateEmails(emails []string, numWorkers int) []ValidationResult {
 	emailChannel := make(chan string, len(emails))
 	resultChannel := make(chan ValidationResult, len(emails))
 	var wg sync.WaitGroup
-	numWorkers := 20
 
 	for i := 0; i < numWorkers; i++ {
 		wg.Add(1)
