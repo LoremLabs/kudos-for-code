@@ -136,9 +136,9 @@ func (p *Project) EnrichContributors(noMerges bool) {
 		}
 
 		for commitAuthor, numCommits := range numCommitsPerCommitAuthor {
-			d.contributors[commitAuthor.email] = &Contributor{
-				email:        commitAuthor.email,
-				name:         commitAuthor.name,
+			d.contributors[commitAuthor.Email] = &Contributor{
+				email:        commitAuthor.Email,
+				name:         commitAuthor.Name,
 				isValidEmail: false,
 				numCommits:   numCommits,
 				score:        0,

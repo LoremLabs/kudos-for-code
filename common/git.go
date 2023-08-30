@@ -10,8 +10,8 @@ import (
 )
 
 type CommitAuthor struct {
-	name  string
-	email string
+	Name  string
+	Email string
 }
 
 func GenerateCommitAuthors(repoUrls []string, noMerges bool) map[string][]CommitAuthor {
@@ -105,8 +105,8 @@ func getAuthorEmails(destPath string, noMerges bool) []CommitAuthor {
 		}
 
 		if len(parts) >= 2 {
-			commitAuthor.name = parts[0]
-			commitAuthor.email = parts[1]
+			commitAuthor.Name = parts[0]
+			commitAuthor.Email = parts[1]
 		}
 
 		commitAuthors = append(commitAuthors, commitAuthor)
